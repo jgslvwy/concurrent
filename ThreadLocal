@@ -6,9 +6,10 @@
   static fields in classes that wish to associate state with a thread (e.g.,
   a user ID or Transaction ID).
  Josh Bloch and Doug Lea这样写的.
- * 我粗略翻译一下：这个类提供了线程本地变量。这个变量不同于其他普通作用允许一个
- 有他自己的记录，独立变量的初始化拷贝。实例是一个经典类型的私有化区域在想要和一个线程联合状态的类中。
- 自己的理解，就是threadLocal就是提供了一种手段，能够保证每个线程在堆中有一块自己的区域用来存放自己线程内部的变量。
+我粗略翻译一下：这个类提供了线程本地变量。这个变量不同于其他普通作用允许一个有他自己的记录，独立变量的初始化拷贝。
+实例是一个经典类型的私有化区域在想要和一个线程联合状态的类中。
+
+自己的理解，就是threadLocal就是提供了一种手段，能够保证每个线程在堆中有一块自己的区域用来存放自己线程内部的变量。
 
 # 分析下汇编指令是什么
 看源代码之前，我想看下用threadLocal的反编译的内容是什么，首先贴一段代码：
@@ -21,7 +22,6 @@ public class ThreadLocalTest {
 }
 
 * javap -v ThreadLocalTest.class，得出内容如下：
-
 
 public static void main(java.lang.String[]);
     descriptor: ([Ljava/lang/String;)V
@@ -55,7 +55,17 @@ public static void main(java.lang.String[]);
       LineNumberTable:
         line 9: 0
 }
-
 从上到下分析一下javap反编译的情况，因为是带有static变量，所以用javap -v，如果不想打印详细的变量 javap -c
+查询官网指令集 https://docs.oracle.com/javase/specs/jvms/se7/html/jvms-6.html
+发现调用过程是这样的：
+0：getstatic—>从类里面获取一个静态区域:
+3：从运行的常量池里面加载String引用到栈
+5：指令用于调用对象的实例方法，根据对象的实际类型进行分派，这里调用的ThreadLocal实例的set()方法并赋值，set的V值
+8：获取System、Out对象输出
+11、14：指令用于调用对象的实例方法，根据对象的实际类型进行分派，这里调用的ThreadLocal实例的get()方法.
+17、判断是否是被给于的类型
+20、获取System、Out对象输出
+23、返回
+
 
 
