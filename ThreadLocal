@@ -131,8 +131,10 @@ set()方法，我们想的是肯定是一个赋值方法，对于一个需要线
         t.threadLocals = new ThreadLocalMap(this, firstValue);
     }
     果然不负众望，确实是这样，在这里面线程里面的这个结构也是懒加载，也是为了避免内存浪费吧，这里赋初值把value赋值给这个map
+3、看完set()，再看看get（）
 
-简单画个流程图说明一下set()吧，如下：
+
+
 
 
     
