@@ -63,9 +63,9 @@ public static void main(java.lang.String[]);
 5：指令用于调用对象的实例方法，根据对象的实际类型进行分派，这里调用的ThreadLocal实例的set()方法并赋值，set的V值
 8：获取System、Out对象输出
 11、14：指令用于调用对象的实例方法，根据对象的实际类型进行分派，这里调用的ThreadLocal实例的get()方法.
-17、判断是否是被给于的类型
-20、获取System、Out对象输出
-23、返回
+17：判断是否是被给于的类型
+20：获取System、Out对象输出
+23：返回
 
 
 
