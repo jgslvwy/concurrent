@@ -117,5 +117,23 @@ set()方法，我们想的是肯定是一个赋值方法，对于一个需要线
         return t.threadLocals;
     }
     哇~，看清楚了么？就是直接返回当前线程的一个threadLocals局部变量，这个变量是在Thread内部，但是呢，其实这个类型是ThreadLocal的静态内部类。
+    也就是其实我每次在设置值的时候，我先拿到当前线程的threadLocals的内容，这块内容只属于这个线程么？是这样的，为啥呢，因为每个线程都会在堆区开
+    一片这个内存机构，保证了各个线程的隔离性。
+    那我们再看一样创建map方法，因为刚刚get的时候获取的是thread的内容，那我们猜想在这块创建map时也是会对应创建当前线程的threadLocal结构。
+    /**
+     * Create the map associated with a ThreadLocal. Overridden in
+     * InheritableThreadLocal.
+     *
+     * @param t the current thread
+     * @param firstValue value for the initial entry of the map
+     */
+    void createMap(Thread t, T firstValue) {
+        t.threadLocals = new ThreadLocalMap(this, firstValue);
+    }
+    果然不负众望，确实是这样，在这里面线程里面的这个结构也是懒加载，也是为了避免内存浪费吧，这里赋初值把value赋值给这个map
+
+简单画个流程图说明一下set()吧，如下：
+
+
     
 
