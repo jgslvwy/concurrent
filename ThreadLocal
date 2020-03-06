@@ -20,7 +20,9 @@ public class ThreadLocalTest {
   }
 }
 
-javap -v ThreadLocalTest.class，得出内容如下：
+* javap -v ThreadLocalTest.class，得出内容如下：
+
+
 public static void main(java.lang.String[]);
     descriptor: ([Ljava/lang/String;)V
     flags: ACC_PUBLIC, ACC_STATIC
