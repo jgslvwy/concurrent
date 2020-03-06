@@ -8,6 +8,55 @@
  Josh Bloch and Doug Lea这样写的，我粗略翻译一下：这个类提供了线程本地变量。这个变量不同于其他普通作用允许一个
  有他自己的记录，独立变量的初始化拷贝。实例是一个经典类型的私有化区域在想要和一个线程联合状态的类中。
  自己的理解，就是threadLocal就是提供了一种手段，能够保证每个线程在堆中有一块自己的区域用来存放自己线程内部的变量。
-# 看源代码之前，我想看下用threadLocal的反编译的内容是什么，首先贴一段代码：
 
- 
+# 看源代码之前，我想看下用threadLocal的反编译的内容是什么，首先贴一段代码：
+package T1;
+/**
+ * @author A
+ * @date 2020/3/6 17:58
+ */
+public class ThreadLocalTest {
+  static ThreadLocal<String> threadLocal = new ThreadLocal<>();
+  public static void main(String[] args) {
+    threadLocal.set("main");
+    System.out.println(threadLocal.get());
+  }
+}
+
+javap -v ThreadLocalTest.class，得出内容如下：
+public static void main(java.lang.String[]);
+    descriptor: ([Ljava/lang/String;)V
+    flags: ACC_PUBLIC, ACC_STATIC
+    Code:
+      stack=2, locals=1, args_size=1
+         0: getstatic     #2                  // Field threadLocal:Ljava/lang/ThreadLocal;
+         3: ldc           #3                  // String main
+         5: invokevirtual #4                  // Method java/lang/ThreadLocal.set:(Ljava/lang/Object;)V
+         8: getstatic     #5                  // Field java/lang/System.out:Ljava/io/PrintStream;
+        11: getstatic     #2                  // Field threadLocal:Ljava/lang/ThreadLocal;
+        14: invokevirtual #6                  // Method java/lang/ThreadLocal.get:()Ljava/lang/Object;
+        17: checkcast     #7                  // class java/lang/String
+        20: invokevirtual #8                  // Method java/io/PrintStream.println:(Ljava/lang/String;)V
+        23: return
+      LineNumberTable:
+        line 11: 0
+        line 12: 8
+        line 13: 23
+
+  static {};
+    descriptor: ()V
+    flags: ACC_STATIC
+    Code:
+      stack=2, locals=0, args_size=0
+         0: new           #9                  // class java/lang/ThreadLocal
+         3: dup
+         4: invokespecial #10                 // Method java/lang/ThreadLocal."<init>":()V
+         7: putstatic     #2                  // Field threadLocal:Ljava/lang/ThreadLocal;
+        10: return
+      LineNumberTable:
+        line 9: 0
+}
+
+从上到下分析一下javap反编译的情况，因为是带有static变量，所以用javap -v，如果不想打印详细的变量 javap -c
+
+
