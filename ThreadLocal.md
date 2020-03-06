@@ -1,20 +1,17 @@
 # 为什么需要ThreadLocal:
- * This class provides thread-local variables.  These variables differ from
- * their normal counterparts in that each thread that accesses one (via its
- * {@code get} or {@code set} method) has its own, independently initialized
- * copy of the variable.  {@code ThreadLocal} instances are typically private
- * static fields in classes that wish to associate state with a thread (e.g.,
- * a user ID or Transaction ID).
- Josh Bloch and Doug Lea这样写的，我粗略翻译一下：这个类提供了线程本地变量。这个变量不同于其他普通作用允许一个
+  This class provides thread-local variables.  These variables differ from
+  their normal counterparts in that each thread that accesses one (via its
+  {@code get} or {@code set} method) has its own, independently initialized
+  copy of the variable.  {@code ThreadLocal} instances are typically private
+  static fields in classes that wish to associate state with a thread (e.g.,
+  a user ID or Transaction ID).
+ Josh Bloch and Doug Lea这样写的.
+ * 我粗略翻译一下：这个类提供了线程本地变量。这个变量不同于其他普通作用允许一个
  有他自己的记录，独立变量的初始化拷贝。实例是一个经典类型的私有化区域在想要和一个线程联合状态的类中。
  自己的理解，就是threadLocal就是提供了一种手段，能够保证每个线程在堆中有一块自己的区域用来存放自己线程内部的变量。
 
-# 看源代码之前，我想看下用threadLocal的反编译的内容是什么，首先贴一段代码：
-package T1;
-/**
- * @author A
- * @date 2020/3/6 17:58
- */
+# 分析下汇编指令是什么
+看源代码之前，我想看下用threadLocal的反编译的内容是什么，首先贴一段代码：
 public class ThreadLocalTest {
   static ThreadLocal<String> threadLocal = new ThreadLocal<>();
   public static void main(String[] args) {
