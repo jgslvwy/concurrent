@@ -11,6 +11,8 @@
 
 自己的理解，就是threadLocal就是提供了一种手段，能够保证每个线程在堆中有一块自己的区域用来存放自己线程内部的变量。
 
+==================================================================================================================================
+
 # 分析下汇编指令是什么
 看源代码之前，我想看下用threadLocal的反编译的内容是什么，首先贴一段代码：
 public class ThreadLocalTest {
@@ -66,6 +68,54 @@ public static void main(java.lang.String[]);
 17：判断是否是被给于的类型
 20：获取System、Out对象输出
 23：返回
+==================================================================================================================================
 
-
+# 接下来分析方法和数据结构
+1、首先我们来看ThreadLocal有多少个局部变量和多少方法：
+threadLocalHashCode、静态变量：nextHashCode、HASH_INCREMENT
+为啥要设置这三个变量，等会回头来看。
+方法：
+nextHashCode()、initialValue()、withInitial(Supplier<? extends S> supplier) 、get()、setInitialValue()、set(T value)
+remove()、getMap(Thread t)、createMap(Thread t, T firstValue)、
+静态内部类：SuppliedThreadLocal、ThreadLocalMap
+2、通过数据结构，好像看不来啥，那就找个方法入门吧，就从set(T value)方法发起吧
+set()方法，我们想的是肯定是一个赋值方法，对于一个需要线程私有化数据，一般会怎么做呢：
+首先拿到当前线程的数据，然后给他设置值，我们都知道对象实例的数据都会在堆区体现，那么设置值的区域，肯定也在堆区，只不过不能让其他线程看到（这个有意思吧）
+我们怎么分析这个逻辑呢：我的想法，为了不让别人看到，我肯定定义一个我自己带有我自己特征的东西，就跟有时候打回的时候，可能会存在多个相同的水杯，
+那我贴个自己的标签。
+设置值就需要有个容器放置，这里就涉及到一个hash map表了，为啥要用hash map，因为查找和加入的效率都足够高，下面看一下代码：
+/**
+     * Sets the current thread's copy of this thread-local variable
+     * to the specified value.  Most subclasses will have no need to
+     * override this method, relying solely on the {@link #initialValue}
+     * method to set the values of thread-locals.
+     *
+     * @param value the value to be stored in the current thread's copy of
+     *        this thread-local.
+     */
+    public void set(T value) {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null)
+            map.set(this, value);
+        else
+            createMap(t, value);
+    }
+   有没有发现这段代码很简单，一共7行，可读性也很好，我们试着读一下：1、获得当前线程 2、通过当前线程拿到当前线程的一块存储map结构
+   3、这个map结构为空，则创建个map（这里面有个问题，创建好需要给这个线程吧，所以入参需要传当前线程） 如果不为空，就给这个map设置值
+   
+   先不分析这个map结构，先看眼这个getMap的逻辑，我们想看看他是怎么通过传入当前线程拿到这个map的，这样的话有可能我们就分析出来map的
+   存放的一些规律。
+   /**
+     * Get the map associated with a ThreadLocal. Overridden in
+     * InheritableThreadLocal.
+     *
+     * @param  t the current thread
+     * @return the map
+     */
+    ThreadLocalMap getMap(Thread t) {
+        return t.threadLocals;
+    }
+    哇~，看清楚了么？就是直接返回当前线程的一个threadLocals局部变量，这个变量是在Thread内部，但是呢，其实这个类型是ThreadLocal的静态内部类。
+    
 
