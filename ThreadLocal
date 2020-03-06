@@ -1,1 +1,9 @@
-
+为什么需要ThreadLocal:
+ * This class provides thread-local variables.  These variables differ from
+ * their normal counterparts in that each thread that accesses one (via its
+ * {@code get} or {@code set} method) has its own, independently initialized
+ * copy of the variable.  {@code ThreadLocal} instances are typically private
+ * static fields in classes that wish to associate state with a thread (e.g.,
+ * a user ID or Transaction ID).
+ Josh Bloch and Doug Lea这样写的，我粗略翻译一下：这个类提供了线程本地变量。这个变量不同于其他普通作用允许一个
+ 有他自己的记录，独立变量的初始化拷贝。实例是一个经典类型的私有化区域在想要和一个线程联合状态的类中。
