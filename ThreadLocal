@@ -11,6 +11,11 @@
 
 自己的理解，就是threadLocal就是提供了一种手段，能够保证每个线程在堆中有一块自己的区域用来存放自己线程内部的变量。
 
+分析下：threadLocal和synchronized，这两种处理问题的思路不同，threadLocal解决的是线程阻塞等待获取锁的问题，每个线程可以操作你自己的那块面包
+而synchronized操作的是一块面包，我在吃的时候，其他人不允许吃。对比下：threadLocal就会感觉更占资源一些，所有线程都需要自己的面包，他其实是
+用空间换时间，synchronized节约资源，但是确耗费时间。两种的处理场景不同：我理解threadLocal用在某些局部利用率高的场景，而synchronized用在资源
+利用率低的场景。比较粗陋，希望后面可以理解的更深。
+
 ==================================================================================================================================
 
 # 分析下汇编指令是什么
@@ -132,8 +137,81 @@ set()方法，我们想的是肯定是一个赋值方法，对于一个需要线
     }
     果然不负众望，确实是这样，在这里面线程里面的这个结构也是懒加载，也是为了避免内存浪费吧，这里赋初值把value赋值给这个map
 3、看完set()，再看看get（）
-
-
+/**
+     * Returns the value in the current thread's copy of this
+     * thread-local variable.  If the variable has no value for the
+     * current thread, it is first initialized to the value returned
+     * by an invocation of the {@link #initialValue} method.
+     *
+     * @return the current thread's value of this thread-local
+     */
+    public T get() {
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null) {
+            ThreadLocalMap.Entry e = map.getEntry(this);
+            if (e != null) {
+                @SuppressWarnings("unchecked")
+                T result = (T)e.value;
+                return result;
+            }
+        }
+        return setInitialValue();
+    }
+哇，果然大佬写的确实比较简单，简单分析下吧，先拿到当前线程，再用当前线程获取一个map,如果存在值的，则
+通过map.getEntry(this)获取当前线程的ThreadLocalMap.Entry对象，然后再获取他的值，发现了么，map.getEntry(this)
+直接可以拿到entry对象，先不看getEntry内部实现，我们暂且猜测是通过hash获取数组下表，在通过遍历链表拿到这个值，
+暂时这么猜测吧，因为hashmap就是这么实现的。
+有意思的是：如果能拿到map的话，则返回，否则调用setInitialValue()，这么设计有点意思，也就是说TheadLocal不会返回null? 拔下setInitialValue()
+ /**
+     * Variant of set() to establish initialValue. Used instead
+     * of set() in case user has overridden the set() method.
+     *
+     * @return the initial value
+     */
+    private T setInitialValue() {
+        T value = initialValue();
+        Thread t = Thread.currentThread();
+        ThreadLocalMap map = getMap(t);
+        if (map != null)
+            map.set(this, value);
+        else
+            createMap(t, value);
+        return value;
+    }
+    这里比较有意思的是，先调用了initialValue（）方法，本来以为有多高端，结果：
+    protected T initialValue() {
+        return null;
+    }
+    只要这个线程获取过这个值，就会创建个map，只不过这个map的value值是null，为啥要这么设计呢？
+    这么设计有这么一个好处，如果当前线程通过调用threadLocal的方法拿不到值时，当前线程就会初始化一个map的数据结构，
+    否则就会把null放到map中，这也是一种懒加载的方式，解决的是不用在每块线程中都初始化map和赋值。
+    
+    #总结下：set和get方法基本上分析完了，从整理逻辑看比较简单，其实看逻辑就是通过找到当前线程的map，然后或操作map或查询map，其实都是操作map结构
+    下面就分析下Thread内部的这个map结构
+    
+    ==================================================================================================================================
+    ThreadLocalMap：
+    作者解释：
+     /**
+     * ThreadLocalMap is a customized hash map suitable only for
+     * maintaining thread local values. No operations are exported
+     * outside of the ThreadLocal class. The class is package private to
+     * allow declaration of fields in class Thread.  To help deal with
+     * very large and long-lived usages, the hash table entries use
+     * WeakReferences for keys. However, since reference queues are not
+     * used, stale entries are guaranteed to be removed only when
+     * the table starts running out of space.
+     */
+     翻译一下：threadLocalMap 是一个自定义的hash map适用于管理线程局部变量。在除了ThreadLocal class以外的类里面
+     没有操作权限。这个类在线程类Thread内部是一个私有局部变量。为了帮助处理非常大和长时间存活的对象，这个hash table entry
+     使用的是弱引用对于keys。然而，表开始超空间运行，自引用队列不被使用，老的实体将被担保被移除。
+     这里面有一个关键词可能在研究这个map之前，这里提到一个弱引用，什么是弱引用？弱引用有什么好处。
+    
+ 
+    
+    
+ 
 
 
 
