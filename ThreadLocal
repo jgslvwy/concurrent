@@ -207,13 +207,28 @@ set()方法，我们想的是肯定是一个赋值方法，对于一个需要线
      没有操作权限。这个类在线程类Thread内部是一个私有局部变量。为了帮助处理非常大和长时间存活的对象，这个hash table entry
      使用的是弱引用对于keys。然而，表开始超空间运行，自引用队列不被使用，老的实体将被担保被移除。
      这里面有一个关键词可能在研究这个map之前，这里提到一个弱引用，什么是弱引用？弱引用有什么好处。
+     
+# 插入一段弱引用：
+先贴一段：https://docs.oracle.com/javase/6/docs/api/java/lang/ref/WeakReference.html
+Weak reference objects, which do not prevent their referents from being made finalizable, finalized, and then reclaimed. 
+弱引用对象，不能阻止他们的引用被finalized和回收，finalized（会在垃圾回收处详细讲解）。
+Weak references are most often used to implement canonicalizing mappings.
+弱引用通常用于实现规范化映射，不太懂，没关系。
+Suppose that the garbage collector determines at a certain point in time that an object is weakly reachable. 
+假设垃圾收集器在某个时间点确定对象是弱可访问的
+At that time it will atomically clear all weak references to that object and all weak references to any other weakly-reachable objects from which that object is reachable through a chain of strong and soft references.
+并且在这个点，将自动清除所有这个对象的弱引用和所有弱引用来自于其他弱可达来自于这个对象被强引用和软引用的链上。
+At the same time it will declare all of the formerly weakly-reachable objects to be finalizable. At the same time or at some later time it will enqueue those newly-cleared weak references that are registered with reference queues. 
+同时他将定义所有以前弱可达的对象被finalizable。同时或者稍后一点时间他将这些新的被清除的被注册在引用队列的弱引用入队列。
+
+字面含义比较难理解，得看看场景吧。
+
+    
     
  
-    
-    
- 
 
 
 
     
 
+的
