@@ -223,5 +223,4 @@ At the same time it will declare all of the formerly weakly-reachable objects to
 
 字面含义比较难理解，得看看场景吧。
 
-ClassLayout
-http://openjdk.java.net/groups/hotspot/docs/HotSpotGlossary.html
+
