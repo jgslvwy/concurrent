@@ -222,5 +222,34 @@ At the same time it will declare all of the formerly weakly-reachable objects to
 同时他将定义所有以前弱可达的对象被finalizable。同时或者稍后一点时间他将这些新的被清除的被注册在引用队列的弱引用入队列。
 
 字面含义比较难理解，得看看场景吧。
+总结一下：弱引用就是提供了一种手段，保证了某些资源的回收，threadLocal里面为啥要用弱引用，这是一种防止内存泄漏的手段，其实我们看threadLocal里面get()
+和set()请求里面很多引用到entry对应的，其实在一种情况下，并发线程数极高的情况下，如果是强引用，可能在一段时间内堆内存都不会马上释放，这样的话，可能
+导致jvm出现OOM情况，而现在用的弱引用，ThreadLocal的这个弱引用可以被注册在引用队列的弱引用入队列里面。
+这里后面会提供个一比一的threadLocal强引用版本和软引用版本
 
+ThreadLocalMap继续吧：
+       /**
+         * The initial capacity -- MUST be a power of two.
+         */
+        private static final int INITIAL_CAPACITY = 16;
+
+        /**
+         * The table, resized as necessary.
+         * table.length MUST always be a power of two.
+         */
+        private Entry[] table;
+
+        /**
+         * The number of entries in the table.
+         */
+        private int size = 0;
+
+        /**
+         * The next size value at which to resize.
+         */
+        private int threshold; // Default to 0
+        
+这三个是默认的局部变量，发下跟hash map这种hash表的方式不一样，我们都知道hash表里面一定会有偏移量这种参数来控制resize的时机，但是发现这个里面没有
+同样有INITIAL_CAPACITY，初始化容量，同样是2的倍数，threshold这个参数很有意思，意思等到resize的时候，下一个尺寸计算的容量值。
+从局部变量看ThreadLocal是一个动态数组，而且很有意思的是他也是求hash值来放置元素在桶中的位置。
 
