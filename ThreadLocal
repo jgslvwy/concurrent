@@ -270,7 +270,12 @@ ThreadLocalMap继续吧：
  1、先初始化
  2、计算firstKey的threadLocalHashCode（怎么计算），第二步取模，取与可以理解，为了均匀分布。
  这就要分析ThreadLocal的里面的逻辑：
+ 首先分析ThreadLocal的属性： private static final int HASH_INCREMENT = 0x61c88647;
+ 很多网上的文章说为了hash散列性，可是为啥是这个数呢，当然也有人说什么黄金比例，那是不是这样的呢
+ 分析下：
+ 首先自己验证下这个数的hash散列性，如下代码，模拟threadLocal的过程：
  
+
  
  
  
