@@ -251,5 +251,28 @@ ThreadLocalMap继续吧：
         
 这三个是默认的局部变量，发下跟hash map这种hash表的方式不一样，我们都知道hash表里面一定会有偏移量这种参数来控制resize的时机，但是发现这个里面没有
 同样有INITIAL_CAPACITY，初始化容量，同样是2的倍数，threshold这个参数很有意思，意思等到resize的时候，下一个尺寸计算的容量值。
-从局部变量看ThreadLocal是一个动态数组，而且很有意思的是他也是求hash值来放置元素在桶中的位置。
+从局部变量看ThreadLocalMap是一个环形数组，而且很有意思的是他也是求hash值来放置元素在桶中的位置。
+为什么这么设计呢，我觉得可能是处于性能考虑，这块的内容后面再探。
+现在继续开始讲ThreadLocalMap的构造函数：
+ ThreadLocalMap(ThreadLocal<?> firstKey, Object firstValue) {
+        //初始化table
+        table = new ThreadLocal.ThreadLocalMap.Entry[INITIAL_CAPACITY];
+        //计算索引
+        int i = firstKey.threadLocalHashCode & (INITIAL_CAPACITY - 1);
+        //设置值
+        table[i] = new ThreadLocal.ThreadLocalMap.Entry(firstKey, firstValue);
+        size = 1;
+        //设置阈值
+        setThreshold(INITIAL_CAPACITY);
+    }
+ 为何要从构造函数说起，其实很多时候，优秀的集合代码结构，构造函数设计的都很巧妙
+ int i = firstKey.threadLocalHashCode & (INITIAL_CAPACITY - 1);
+ 1、先初始化
+ 2、计算firstKey的threadLocalHashCode（怎么计算），第二步取模，取与可以理解，为了均匀分布。
+ 这就要分析ThreadLocal的里面的逻辑：
+ 
+ 
+ 
+ 
+ 
 
